@@ -7,7 +7,7 @@ response.css(".authorList a::attr(href)").getall()
 -> author name = response.css(".details-book-info__content-author a::text").get().strip()
 -> categories = response.css(".details-book-info__content-category .ml-2::text").get().strip()
 -> n_ratings = int(response.css(".details-book-info__content-rating .ml-2::text").get().strip().split()[0]) # only gets the number
--> review = response.css(".ml-2 a::text").get().strip()
+-> n_review = response.css(".ml-2 a::text").get().strip()
 -> price = int(response.css(".sell-price::text").get().strip().split()[1].replace(",", ""))
 -> publisher = response.css(".item a::text").get().strip()
 -> isbn = int(response.css(".item~ .item+ .item .circle+ p::text").get().strip())
