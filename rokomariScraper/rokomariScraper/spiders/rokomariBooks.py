@@ -32,6 +32,8 @@ class RokomaribooksSpider(scrapy.Spider):
             yield response.follow(next_page, callback=self.parse_publishers)
 
     def parse_books(self, response):
+        items = RokomariscraperItem()
+
         title = (
             response.css("h1::text").get().strip()
             if response.css("h1::text")
@@ -99,3 +101,18 @@ class RokomaribooksSpider(scrapy.Spider):
             if response.css(".look-inside::attr(src)")
             else "No image"
         )
+        
+        items['isbn'] = isbn
+        items['title'] = title
+        items['author'] = author
+        items['publisher'] = publisher
+        items['categories'] = categories
+        items['summary'] = summaray
+        items['rating'] = rating
+        items['n_ratings'] = n_ratings
+        items['n_reviews'] = n_reviews
+        items['prod_img_link'] = prod_img_link
+        items['price'] = price
+
+        yield items
+
