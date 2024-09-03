@@ -49,14 +49,13 @@ class RokomaribooksSpider(scrapy.Spider):
             else "No Categories"
         )
         n_ratings = (
-            int(
-                response.css(".details-book-info__content-rating .ml-2::text")
-                .get()
-                .strip()
-                .split()[0]
-            )
+            
+            response.css(".details-book-info__content-rating .ml-2::text")
+            .get()
+            .strip()
+            .split()[0]
             if response.css(".details-book-info__content-rating .ml-2::text")
-            else 0
+            else "No Ratings"
         )
         n_reviews = (
             response.css(".ml-2 a::text").get().strip()
