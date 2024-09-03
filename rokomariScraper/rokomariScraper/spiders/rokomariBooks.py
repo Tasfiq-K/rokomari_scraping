@@ -1,4 +1,5 @@
 import scrapy
+from ..items import RokomariscraperItem
 
 
 class RokomaribooksSpider(scrapy.Spider):

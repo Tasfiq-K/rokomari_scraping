@@ -8,5 +8,14 @@ import scrapy
 
 class RokomariscraperItem(scrapy.Item):
     # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    title = scrapy.Field()
+    author = scrapy.Field()
+    categories = scrapy.Field()
+    n_ratings = scrapy.Field()
+    n_reviews = scrapy.Field()
+    price = scrapy.Field()
+    publisher = scrapy.Field()
+    isbn = scrapy.Field()
+    summary = scrapy.Field()
+    rating = scrapy.Field()
+    prod_img_link = scrapy.Field()
