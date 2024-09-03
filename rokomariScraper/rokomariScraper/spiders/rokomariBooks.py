@@ -79,9 +79,9 @@ class RokomaribooksSpider(scrapy.Spider):
             else "No Publisher"
         )
         isbn = (
-            int(response.css(".item~ .item+ .item .circle+ p::text").get().strip())
+            response.css(".item~ .item+ .item .circle+ p::text").get().strip()
             if response.css(".item~ .item+ .item .circle+ p::text")
-            else -1
+            else "No ISBN"
         )
         summaray = (
             response.css("#js--summary-description::text").get()
