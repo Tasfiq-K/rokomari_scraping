@@ -1,3 +1,5 @@
+import json
+
 import scrapy
 
 from ..items import RokomariscraperItem
@@ -9,109 +11,147 @@ class RokomaribooksSpider(scrapy.Spider):
     start_urls = ["https://www.rokomari.com/book/publishers?ref=sm_p2"]
 
     def parse(self, response):
-        links = response.css(".authorList a::attr(href)").getall()
+        publisher_links_per_page = response.xpath("//a[h2]/@href").getall()
 
-        if links:
-            for link in links:
+        if publisher_links_per_page:
+            for link in publisher_links_per_page:
                 yield response.follow(link, callback=self.parse_publishers)
 
-        next_page = response.css("a:nth-child(13)::attr(href)").get()
+        # if there are other pages for current publisher
+        publisher_next_page = response.xpath(
+            '//a[contains(text(), "next")]/@href'
+        ).get()
 
-        if next_page:
-            yield response.follow(next_page, callback=self.parse)
+        if publisher_next_page:
+            yield response.follow(publisher_next_page, callback=self.parse)
 
     def parse_publishers(self, response):
-        book_links = response.css(".book-list-wrapper a::attr(href)").getall()
+        # for the current publisher parse the book links
+        book_links_per_page = response.xpath(
+            '//a[contains(text(), "Details")]/@href'
+        ).getall()
 
-        if book_links:
-            for book_link in book_links:
+        if book_links_per_page:
+            for book_link in book_links_per_page:
                 yield response.follow(book_link, callback=self.parse_books)
 
-        next_page = response.css("a:nth-child(7)::attr(href)").get()
+        book_next_page_numbers = response.xpath(
+            '//a[contains(@href, "page")]/text()'
+        ).getall()
+        # if books_next_page_bumber not empty, generate the books pages links
 
-        if next_page:
-            yield response.follow(next_page, callback=self.parse_publishers)
+        if book_next_page_numbers:
+            book_next_page_links = [
+                f"{response.url}&page={page_number}"
+                for page_number in book_next_page_numbers
+            ]
+
+        if book_next_page_links:
+            for next_page in book_next_page_links:
+                yield response.follow(next_page, callback=self.parse_publishers)
 
     def parse_books(self, response):
         items = RokomariscraperItem()
 
         title = (
-            response.css("h1::text").get().strip()
-            if response.css("h1::text")
+            response.xpath("//h1/text()").get().strip()
+            if response.xpath("//h1/text()").get()
             else "No Title"
         )
         author = (
-            response.css(".details-book-info__content-author a::text").get().strip()
-            if response.css(".details-book-info__content-author a::text")
+            response.xpath('//p[span[contains(text(), "by")]]/a/text()').get().strip()
+            if response.xpath('//p[span[contains(text(), "by")]]/a/text()')
             else "No Author"
         )
         categories = (
-            response.css(".details-book-info__content-category .ml-2::text")
+            response.xpath('//div[span[contains(text(), "Category")]]/a/text()')
             .get()
             .strip()
-            if response.css(".details-book-info__content-category .ml-2::text")
+            if response.xpath('//div[span[contains(text(), "Category")]]/a/text()')
             else "No Categories"
         )
-        n_ratings = (
-            response.css(".details-book-info__content-rating .ml-2::text")
+
+        publisher = (
+            response.xpath('//div[p[contains(text(), "Publication")]]/a/text()')
             .get()
             .strip()
-            .split()[0]
-            if response.css(".details-book-info__content-rating .ml-2::text")
-            else "No Ratings"
-        )
-        n_reviews = (
-            response.css(".ml-2 a::text").get().strip()
-            if response.css(".ml-2 a::text")
-            else "No Reviews"
-        )
-        price = (
-            int(
-                response.css(".sell-price::text")
-                .get()
-                .strip()
-                .split()[1]
-                .replace(",", "")
-            )
-            if response.css(".sell-price::text")
-            else 0
-        )
-        publisher = (
-            response.css(".item a::text").get().strip()
-            if response.css(".item a::text")
+            if response.xpath('//div[p[contains(text(), "Publication")]]/a/text()')
             else "No Publisher"
         )
+
         isbn = (
-            response.css(".item~ .item+ .item .circle+ p::text").get().strip()
-            if response.css(".item~ .item+ .item .circle+ p::text")
+            response.xpath('//div[p[contains(text(), "ISBN")]]/p/text()')
+            .getall()[1]
+            .strip()
+            if response.xpath('//div[p[contains(text(), "ISBN")]]/p/text()')
             else "No ISBN"
         )
+
+        edition = (
+            response.xpath('//div[p[contains(text(), "Edition")]]/p/text()')
+            .getall()[1]
+            .strip()
+            if response.xpath('//div[p[contains(text(), "Edition")]]/p/text()')
+            else "No Edition"
+        )
+
+        availability = (
+            response.xpath('//span[contains(@id, "not-available")]/text()')
+            .get()
+            .strip()
+            if response.xpath('//span[contains(@id, "not-available")]/text()')
+            else "Available"
+        )
+
         summaray = (
-            response.css("#js--summary-description::text").get()
-            if response.css("#js--summary-description::text")
+            "।".join(
+                response.xpath('//div[contains(@id, "summary")]/text()').getall()
+            ).strip()
+            if response.xpath('//div[contains(@id, "summary")]/text()')
             else "No summary"
         )
-        rating = (
-            float(response.css(".summary-title::text").get())
-            if response.css(".summary-title::text")
-            else 0.0
-        )
-        prod_img_link = (
-            response.css(".look-inside::attr(src)").get()
-            if response.css(".look-inside::attr(src)")
-            else "No image"
-        )
+
+        js_obj = response.xpath('//script[contains(@type, "ld+json")]/text()').getall()[0]  # better
+
+        if js_obj:
+            json_data = json.loads(js_obj)
+            prod_img_link = (
+                json_data["image"] if json_data["image"] else "No image link"
+            )
+
+            price = float(json_data["price"])
+
+            if json_data["aggregateRating"]:
+                rating = float(json_data["aggregateRating"]["ratingValue"])
+
+                n_ratings = int(json_data["aggregateRating"]["ratingCount"])
+                n_reviews = int(json_data["aggregateRating"]["reviewCount"])
+                publisher_name_english = json_data["brand"]
+                category_english = json_data["category"]
+
+            # offer information
+            if json_data["offers"]:
+                offer_price = (
+                    float(json_data["offers"]["price"])
+                    if json_data["offers"]["price"]
+                    else 0.0
+                )
 
         items["isbn"] = isbn
         items["title"] = title
         items["author"] = author
         items["publisher"] = publisher
+        items["publisher_name_english"] = publisher_name_english
         items["categories"] = categories
+        items["category_english"] = category_english
+        items["edition"] = edition
+        items["availability"] = availability
         items["summary"] = summaray
         items["rating"] = rating
         items["n_ratings"] = n_ratings
         items["n_reviews"] = n_reviews
         items["prod_img_link"] = prod_img_link
         items["price"] = price
+        items["offer_price"] = offer_price
 
         yield items
