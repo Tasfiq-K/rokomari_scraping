@@ -46,9 +46,9 @@ class RokomaribooksSpider(scrapy.Spider):
                 for page_number in book_next_page_numbers
             ]
 
-        if book_next_page_links:
-            for next_page in book_next_page_links:
-                yield response.follow(next_page, callback=self.parse_publishers)
+            if book_next_page_links:
+                for next_page in book_next_page_links:
+                    yield response.follow(next_page, callback=self.parse_publishers)
 
     def parse_books(self, response):
         items = RokomariscraperItem()
