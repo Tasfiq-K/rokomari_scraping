@@ -1,5 +1,10 @@
 ## To get all the publisher links in a page
 response.css(".authorList a::attr(href)").getall()
+publisher_links_per_page = response.xpath('//a[h2]/@href').getall()
+
+next_page = response.xpath('//a[contains(text(), "next")]/@href').get()
+book_links = response.xpath('//a[contains(text(), "Details")]/@href').getall()
+books_page = response.xpath('//a[contains(@href, "page")]/text()').getall()
 
 ## product page
 
@@ -23,3 +28,27 @@ response.css(".authorList a::attr(href)").getall()
 -> response.css("a:nth-child(7)::attr(href)").get()
 ## getting all the book links from a page (while visiting a publisher)
 -> response.css(".book-list-wrapper a::attr(href)").getall()
+
+book_title = response.xpath('//h1/text()').get().stip()
+author_name = response.xpath('//p[span[contains(text(), "by")]]/a/text()').get()
+publishers = response.xpath('//div[p[contains(text(), "Publication")]]/a/text()').get()
+edition =  response.xpath('//div[p[contains(text(), "Edition")]]/p/text()').getall()[1]
+isbn = response.xpath('//div[p[contains(text(), "ISBN")]]/p/text()').getall()[1].strip()
+category = category_text = response.xpath('//div[span[contains(text(), "Category")]]/a/text()').get()
+summary_text = response.xpath('//div[contains(@id, "summary")]/text()').getall() # list of strings
+availability = response.xpath('//span[contains(@id, "not-available")]/text()').get()
+obj = response.xpath('//script[@type="application/ld+json"]/text()').getall()[0]
+obj = response.xpath('//script[contains(@type, "ld+json")]/text()').getall()[0] # better
+js_obj = json.loads(obj)
+image = js_obj['image]
+price = js_obj['prce]
+
+
+if js_obj["aggregateRating"]:
+    rating = js_obj["aggregateRating"]['ratingValue']
+    rating_count = js_obj['ratingCount']
+    review_count = js_obj['reviewCount']
+publishers_eng = js_obj['brand]
+category_eng = js_obj['category']
+if js_obj["offers"]:
+    offer_price = js_obj['offers']['price']
