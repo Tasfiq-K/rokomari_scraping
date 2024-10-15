@@ -35,20 +35,13 @@ class RokomaribooksSpider(scrapy.Spider):
             for book_link in book_links_per_page:
                 yield response.follow(book_link, callback=self.parse_books)
 
-        book_next_page_numbers = response.xpath(
-            '//a[contains(@href, "page")]/text()'
-        ).getall()
-        # if books_next_page_bumber not empty, generate the books pages links
+        # if there are multiple pages for the current publisher that has books
+        # grab the next page element
+        books_next_page = response.xpath('//a[i[contains(@class, "chevron-right")]]/@href').get()
 
-        if book_next_page_numbers:
-            book_next_page_links = [
-                f"{response.url}&page={page_number}"
-                for page_number in book_next_page_numbers
-            ]
-
-            if book_next_page_links:
-                for next_page in book_next_page_links:
-                    yield response.follow(next_page, callback=self.parse_publishers)
+        # if the next page exists, follow it
+        if books_next_page:
+            yield response.follow(books_next_page, callback=self.parse_publishers)
 
     def parse_books(self, response):
         items = RokomariscraperItem()
