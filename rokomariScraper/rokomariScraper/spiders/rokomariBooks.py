@@ -46,6 +46,12 @@ class RokomaribooksSpider(scrapy.Spider):
     def parse_books(self, response):
         items = RokomariscraperItem()
 
+        book_url = (
+            response.url
+            if response.url
+            else 'No Valid Url'
+        )
+
         title = (
             response.xpath("//h1/text()").get().strip()
             if response.xpath("//h1/text()").get()
@@ -129,7 +135,7 @@ class RokomaribooksSpider(scrapy.Spider):
                     if json_data["offers"]["price"]
                     else 0.0
                 )
-
+        items['book_url'] = book_url
         items["isbn"] = isbn
         items["title"] = title
         items["author"] = author
