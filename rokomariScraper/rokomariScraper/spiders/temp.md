@@ -4,7 +4,7 @@ publisher_links_per_page = response.xpath('//a[h2]/@href').getall()
 
 next_page = response.xpath('//a[contains(text(), "next")]/@href').get()
 book_links = response.xpath('//a[contains(text(), "Details")]/@href').getall()
-books_page = response.xpath('//a[contains(@href, "page")]/text()').getall()
+books_page = response.xpath('//a[i[contains(@class, "chevron-right")]]/@href').get()
 
 ## product page
 
