@@ -4,11 +4,13 @@
 
 This repo contains code for scrapy bot (scraper) which scrapes book information from one of the largest online bookshop in Bangladesh, [**rokomari.com**](https://www.rokomari.com)
 
+The scraper collected **3 Lac+** book information from [**rokomari.com**](https://www.rokomari.com)
+
 ## Setup
 
 To setup this bot in your local machine follow the followings:
 
-First, you'll probably need to create a virtual environment (venv). Go to a directory where you want to create your venv and open terminal/cmd there
+First, you'll probably need to create a virtual environment (venv). It's always safer and a good idea to run any project under a virtual environment. Go to a directory where you want to create your venv and open terminal/cmd there
 and paste or write this command:
 
 ```bash
@@ -21,7 +23,7 @@ python -m venv venv
 ```
 Btw, make sure to have python installed :p
 
-Next, to activate the virtual environment you just created, let's assume its' name is `venv`. So to activate this use
+Now that you have created a virtual environment you need to activate it. To activate the virtual environemnt, and assuming its' name is `venv`. use the command
 
 On **Linux** / **Mac**
 ```bash
@@ -63,7 +65,7 @@ to go there.
 
 Now you can actually run the bot as is (if you want that).
 
-To, run the bot use the scrapy command tools
+To run the bot use the scrapy command line tools
 
 ```bash
 scrapy crawl rokomariBooks -o file_name_of_your_choice.extension
