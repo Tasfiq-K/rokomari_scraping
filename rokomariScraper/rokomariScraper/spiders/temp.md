@@ -36,13 +36,16 @@ edition =  response.xpath('//div[p[contains(text(), "Edition")]]/p/text()').geta
 isbn = response.xpath('//div[p[contains(text(), "ISBN")]]/p/text()').getall()[1].strip()
 category = category_text = response.xpath('//div[span[contains(text(), "Category")]]/a/text()').get()
 summary_text = response.xpath('//div[contains(@id, "summary")]/text()').getall() # list of strings
+
 availability = response.xpath('//span[contains(@id, "not-available")]/text()').get()
+availability = response.xpath('//div[contains(@id, "details-btn-area")]//span/text()').get() # better -> 
+
 obj = response.xpath('//script[@type="application/ld+json"]/text()').getall()[0]
 obj = response.xpath('//script[contains(@type, "ld+json")]/text()').getall()[0] # better
 js_obj = json.loads(obj)
 image = js_obj['image]
 price = js_obj['prce]
-
+language = response.xpath('//div[contains(@id, "additional-specification")]//tr[td[contains(text(), "Language")]]/td[2]/text()').get()
 
 if js_obj["aggregateRating"]:
     rating = js_obj["aggregateRating"]['ratingValue']
