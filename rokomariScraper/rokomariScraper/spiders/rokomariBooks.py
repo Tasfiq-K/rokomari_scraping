@@ -37,7 +37,9 @@ class RokomaribooksSpider(scrapy.Spider):
 
         # if there are multiple pages for the current publisher that has books
         # grab the next page element
-        books_next_page = response.xpath('//a[i[contains(@class, "chevron-right")]]/@href').get()
+        books_next_page = response.xpath(
+            '//a[i[contains(@class, "chevron-right")]]/@href'
+        ).get()
 
         # if the next page exists, follow it
         if books_next_page:
@@ -46,11 +48,7 @@ class RokomaribooksSpider(scrapy.Spider):
     def parse_books(self, response):
         items = RokomariscraperItem()
 
-        book_url = (
-            response.url
-            if response.url
-            else 'No Valid Url'
-        )
+        book_url = response.url if response.url else "No Valid Url"
 
         title = (
             response.xpath("//h1/text()").get().strip()
@@ -95,11 +93,11 @@ class RokomaribooksSpider(scrapy.Spider):
         )
 
         availability = (
-            response.xpath('//span[contains(@id, "not-available")]/text()')
+            response.xpath('//div[contains(@id, "details-btn-area")]//span/text()')
             .get()
             .strip()
-            if response.xpath('//span[contains(@id, "not-available")]/text()')
-            else "Available"
+            if response.xpath('//div[contains(@id, "details-btn-area")]//span/text()')
+            else "Not Available"
         )
 
         summaray = (
@@ -108,6 +106,18 @@ class RokomaribooksSpider(scrapy.Spider):
             ).strip()
             if response.xpath('//div[contains(@id, "summary")]/text()')
             else "No summary"
+        )
+
+        language = (
+            response.xpath(
+                '//div[contains(@id, "additional-specification")]//tr[td[contains(text(), "Language")]]/td[2]/text()'
+            )
+            .get()
+            .strip()
+            if response.xpath(
+                '//div[contains(@id, "additional-specification")]//tr[td[contains(text(), "Language")]]/td[2]/text()'
+            )
+            else "No Language"
         )
 
         js_obj = response.xpath('//script[contains(@type, "ld+json")]/text()').getall()[0]  # better
@@ -135,7 +145,7 @@ class RokomaribooksSpider(scrapy.Spider):
                     if json_data["offers"]["price"]
                     else 0.0
                 )
-        items['book_url'] = book_url
+        items["book_url"] = book_url
         items["isbn"] = isbn
         items["title"] = title
         items["author"] = author
@@ -146,6 +156,7 @@ class RokomaribooksSpider(scrapy.Spider):
         items["edition"] = edition
         items["availability"] = availability
         items["summary"] = summaray
+        items['language'] = language
         items["rating"] = rating
         items["n_ratings"] = n_ratings
         items["n_reviews"] = n_reviews
