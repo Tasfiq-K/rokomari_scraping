@@ -45,7 +45,9 @@ obj = response.xpath('//script[contains(@type, "ld+json")]/text()').getall()[0] 
 js_obj = json.loads(obj)
 image = js_obj['image]
 price = js_obj['prce]
-language = response.xpath('//div[contains(@id, "additional-specification")]//tr[td[contains(text(), "Language")]]/td[2]/text()').get()
+language = response.xpath('//div[contains(@id, "additional-specification")]//tr[td[contains(text(), "Language")]]/td[2]/text()').get() (not working well)
+
+language = response.xpath('//div[contains(@id, "additional-specification")]//tr[td[1][contains(text(), "Language")]]/td[2]/text()').get() (working)
 
 if js_obj["aggregateRating"]:
     rating = js_obj["aggregateRating"]['ratingValue']
