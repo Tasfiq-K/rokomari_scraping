@@ -26,3 +26,4 @@ class RokomariscraperItem(scrapy.Item):
     prod_img_link = scrapy.Field()
     book_url = scrapy.Field()
     language = scrapy.Field()
+    book_id = scrapy.Field()
