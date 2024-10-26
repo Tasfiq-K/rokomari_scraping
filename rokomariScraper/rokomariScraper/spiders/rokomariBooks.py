@@ -49,6 +49,11 @@ class RokomaribooksSpider(scrapy.Spider):
         items = RokomariscraperItem()
 
         book_url = response.url if response.url else "No Valid Url"
+        book_id = (
+            int(response.xpath('//div//input[contains(@id, "product-id")]/@value').get())
+            if response.xpath('//div//input[contains(@id, "product-id")]/@value')
+            else -1
+        )
 
         title = (
             response.xpath("//h1/text()").get().strip()
@@ -110,12 +115,12 @@ class RokomaribooksSpider(scrapy.Spider):
 
         language = (
             response.xpath(
-                '//div[contains(@id, "additional-specification")]//tr[td[contains(text(), "Language")]]/td[2]/text()'
+                '//div[contains(@id, "additional-specification")]//tr[td[1][contains(text(), "Language")]]/td[2]/text()'
             )
             .get()
             .strip()
             if response.xpath(
-                '//div[contains(@id, "additional-specification")]//tr[td[contains(text(), "Language")]]/td[2]/text()'
+                '//div[contains(@id, "additional-specification")]//tr[td[1][contains(text(), "Language")]]/td[2]/text()'
             )
             else "No Language"
         )
@@ -146,6 +151,7 @@ class RokomaribooksSpider(scrapy.Spider):
                     else 0.0
                 )
         items["book_url"] = book_url
+        items["book_id"] = book_id
         items["isbn"] = isbn
         items["title"] = title
         items["author"] = author
